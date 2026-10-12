@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.0 - 2026-10-12
+
+### Added
+
+- 润色结果替换回填：结果窗口上新增「替换」按钮，把 AI 生成的文本直接写回原应用中被选中的位置（结果写入剪贴板 → 焦点回到来源窗口 → 复核选区 → 合成 Ctrl+V）。校验失败时降级为「已复制，请手动粘贴」，降低误贴风险。**目前仅 Windows x64，且只接在润色动作上。**
+- 润色改用结构化输出：默认 `json_schema`，可切换为 `json_object` 或关闭服务端格式约束；结果拆分为 `replacement` / `note` 两个字段，替换与复制只取正文，说明不再混入原文；解析失败时保留原始回答全文。流式期间增量渲染替换结果。
+- 预选上下文：划词内容可以作为引用带入对话窗，支持预选面板与标记选择器，面板开局占固定槽位、布局不跳动。
+- 对话支持发图：图片随会话历史保留，追问时模型仍能看到之前的图。
+- Windows：Ctrl+A 全选可唤出工具栏（默认开启），复用钩子键盘管道，通过纯函数状态机处理按键重复。
+- 发送键可配置为 Enter / Ctrl+Enter / Shift+Enter，默认纯 Enter。
+- 应用内快捷键冲突检测：全局热键与动作快捷键重复时拒绝保存并就地提示。
+- 动作窗单实例复用池；可选的动作窗预建降低首次触发延迟（默认开启，可关闭）。
+- `raceResponse` 设置项：流被新请求覆盖或其窗口销毁时，由用户选择中止还是继续跑完。
+- 可选上下文注入（默认关闭）：在请求 system prompt 中附加来源应用、本地时间、IANA 时区三项。
+- 可选本地使用统计（默认关闭）：开启后每次完成或中止的 AI 动作会向 `userData/stats.jsonl` 追加一条 JSONL 记录（含该次请求原文与回答，流被中止时保存已生成部分）。该文件不上传，也不会被读回用于 AI 请求。
+
+### Changed
+
+- 内置原生模块 fork（`third_party/selection-hook`），新增带 hwnd 的窗口级 API：`getSelectionOfWindow`、`focusWindow`、`sendPasteKey`；与上游的差异记录在 `FORK.md`。
+- `react-markdown` 全家桶改为懒加载，首屏 bundle 缩减约 368 kB（minified）。
+- 忽略来自应用自身窗口的划词事件。
+- electron-builder 配置更新：原生模块从 asar 解包，附带 selection-hook prebuilds 的打包脚本。
+- 所有输入框补齐输入法组合态（IME composing）的 Enter 保护。
+- 空态与标题栏打磨，Windows 采用原生观感的自绘标题栏与窗控按钮。
+
+### Fixed
+
+- 修复 React StrictMode 重复读取初始数据导致的空白动作窗。
+
 ## 0.7.0 - 2026-08-30
 
 ### Added
