@@ -35,29 +35,30 @@ Currently runs on macOS and Windows.
 
 ## Download
 
-Latest published release **v0.8.0** - grab the installer for your platform:
+Latest published release **v0.8.1** - grab the installer for your platform:
 
 | Platform | Package | Link |
 | --- | --- | --- |
-| macOS (Apple Silicon) | `.dmg` | [AIA-Selection-Assistant-0.8.0-arm64.dmg](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-0.8.0-arm64.dmg) |
-| macOS (Apple Silicon) | `.zip` | [AIA-Selection-Assistant-0.8.0-arm64-mac.zip](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-0.8.0-arm64-mac.zip) |
-| Windows x64 | Installer | [AIA-Selection-Assistant-Setup-0.8.0.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-Setup-0.8.0.exe) |
-| Windows x64 | Portable | [AIA-Selection-Assistant-Portable-0.8.0.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-Portable-0.8.0.exe) |
+| macOS (Apple Silicon) | `.dmg` | [AIA-Selection-Assistant-0.8.1-arm64.dmg](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-0.8.1-arm64.dmg) |
+| macOS (Apple Silicon) | `.zip` | [AIA-Selection-Assistant-0.8.1-arm64-mac.zip](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-0.8.1-arm64-mac.zip) |
+| Windows x64 | Installer | [AIA-Selection-Assistant-Setup-0.8.1.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-Setup-0.8.1.exe) |
+| Windows x64 | Portable | [AIA-Selection-Assistant-Portable-0.8.1.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-Portable-0.8.1.exe) |
 
-### v0.8.0 highlights
+### v0.8.1 highlights
 
-- **Replace selection with the AI result**: a Replace button on the result window writes the output straight back over the original selection; if verification fails it degrades to "copied, paste it manually". Currently Windows x64 and the Polish action only
-- Polish now uses structured output split into `replacement` / `note`, so notes no longer leak into the text; switchable between `json_schema`, `json_object`, or off
-- Pre-selection context: carry selected text into the chat window; the chat also accepts images, which stay in the session history
-- Windows: Ctrl+A now summons the toolbar (on by default); IME composing Enter guards; configurable send key (Enter / Ctrl+Enter / Shift+Enter); shortcut conflict detection
-- Single-instance action-window reuse pool and optional pre-warmed windows; `raceResponse` lets you abort or let a superseded stream finish
-- First-screen bundle trimmed by ~368 kB (Markdown rendering is lazy-loaded); bundled `selection-hook` fork is unpacked from the asar
+- Fixed the **white corners around the app icon** in the Windows title bar and taskbar (#4)
+- The artwork is a rounded square with transparent corners, but Windows paints the window and taskbar icons straight from the bitmap without applying a corner mask, so those transparent corners were filled in white; on top of that, all five sizes in the `.ico` were PNG-compressed entries, and the legacy icon paths used by the title bar and taskbar handle those poorly
+- Windows now uses a dedicated full-bleed opaque icon (same artwork, corners flattened onto the background) with 32bpp BMP entries for the small sizes; macOS and the tray keep the original rounded transparent artwork
+
+For the headline v0.8.0 features (replace selection, pre-selection context, images in chat), see the [CHANGELOG](./CHANGELOG.md).
 
 For older versions and full asset lists, see [GitHub Releases](https://github.com/zcx960/AIA-selection-assistan/releases).
 
 > This README describes the current `main` branch. If you download a Release build, use that version's actual binaries as the source of truth.
 
-> The macOS builds are not code-signed — on first launch allow them via *System Settings → Privacy & Security*. Windows builds are not signed either; if SmartScreen complains, choose “Run anyway”.
+> The macOS builds are not code-signed — on first launch allow them via *System Settings → Privacy & Security*.
+>
+> The Windows builds aren't signed either; if SmartScreen complains, choose “Run anyway”. If **Smart App Control (SAC)** is enabled it may block the installer outright — SAC has no per-app allowlist, so the only way through is to turn the feature off under **Windows Security → App & browser control → Smart App Control settings**. On older Windows 11 builds that switch is one-way (restoring it needs a reset); Windows 11 24H2/25H2 can toggle it freely after the April 2026 update (KB5083769).
 
 ## Overview
 
@@ -150,6 +151,7 @@ For older versions and full asset lists, see [GitHub Releases](https://github.co
 - Supports staying resident in the system tray
 - Closing the main window minimizes it to the tray instead of quitting
 - Selection behavior can vary depending on the target app, elevation level, or IME state
+- The installer is not code-signed: choose “Run anyway” at the SmartScreen prompt; if Smart App Control is enabled you must turn it off device-wide before installing (see the Download section above)
 
 ## Installation and Local Development
 

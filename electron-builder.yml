@@ -11,6 +11,10 @@ files:
 extraResources:
   - from: build/icon.png
     to: build/icon.png
+  # Windows window icon: same artwork with the rounded corners flattened onto
+  # the background colour, so the shell never fills them in white.
+  - from: build/icon-win.png
+    to: build/icon-win.png
 asarUnpack:
   - node_modules/selection-hook/**
   - node_modules/uiohook-napi/**
@@ -27,7 +31,10 @@ mac:
 dmg:
   artifactName: AIA-Selection-Assistant-${version}-${arch}.${ext}
 win:
-  icon: build/icon.ico
+  # Full-bleed opaque variant: small sizes stored as 32bpp BMP entries so the
+  # legacy shell icon paths (taskbar / title bar) get real alpha-capable data
+  # instead of PNG entries they cannot read.
+  icon: build/icon-win.ico
   target:
     - target: nsis
       arch:

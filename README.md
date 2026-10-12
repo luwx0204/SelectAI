@@ -35,29 +35,30 @@ AIA划词助手是一个常驻菜单栏 / 系统托盘的小工具。在任意�
 
 ## 下载
 
-最新发布版本 **v0.8.0**，可点击直接下载对应平台的安装包：
+最新发布版本 **v0.8.1**，可点击直接下载对应平台的安装包：
 
 | 平台 | 包类型 | 下载 |
 | --- | --- | --- |
-| macOS (Apple Silicon) | `.dmg` | [AIA-Selection-Assistant-0.8.0-arm64.dmg](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-0.8.0-arm64.dmg) |
-| macOS (Apple Silicon) | `.zip` | [AIA-Selection-Assistant-0.8.0-arm64-mac.zip](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-0.8.0-arm64-mac.zip) |
-| Windows x64 | 安装版 | [AIA-Selection-Assistant-Setup-0.8.0.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-Setup-0.8.0.exe) |
-| Windows x64 | 便携版 | [AIA-Selection-Assistant-Portable-0.8.0.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.0/AIA-Selection-Assistant-Portable-0.8.0.exe) |
+| macOS (Apple Silicon) | `.dmg` | [AIA-Selection-Assistant-0.8.1-arm64.dmg](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-0.8.1-arm64.dmg) |
+| macOS (Apple Silicon) | `.zip` | [AIA-Selection-Assistant-0.8.1-arm64-mac.zip](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-0.8.1-arm64-mac.zip) |
+| Windows x64 | 安装版 | [AIA-Selection-Assistant-Setup-0.8.1.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-Setup-0.8.1.exe) |
+| Windows x64 | 便携版 | [AIA-Selection-Assistant-Portable-0.8.1.exe](https://github.com/zcx960/AIA-selection-assistan/releases/download/v0.8.1/AIA-Selection-Assistant-Portable-0.8.1.exe) |
 
-### v0.8.0 更新
+### v0.8.1 更新
 
-- **润色结果替换回填**：结果窗新增「替换」按钮，把 AI 结果直接写回原应用被选中的位置；校验失败时降级为「已复制，请手动粘贴」。目前仅 Windows x64，且只接在润色动作上
-- 润色改用结构化输出，结果拆分 `replacement` / `note`，说明不再混入正文；可在 `json_schema` / `json_object` / 关闭之间切换
-- 预选上下文：划词内容可带入对话窗；对话支持发图，图片随会话历史保留
-- Windows：Ctrl+A 全选可唤出工具栏（默认开启）；补齐输入法组合态的 Enter 保护；发送键可配 Enter / Ctrl+Enter / Shift+Enter；快捷键冲突检测
-- 动作窗单实例复用池、可选预建窗口；`raceResponse` 可选中止或继续跑完
-- 首屏 bundle 缩减约 368 kB（Markdown 渲染改为懒加载）；内置 `selection-hook` fork，打包时从 asar 解包
+- 修复 Windows 上窗口标题栏与任务栏图标**四角显示白块**的问题（#4）
+- 原因是图标本身是圆角矩形、四角透明，而 Windows 直接用位图绘制窗口与任务栏图标、不做圆角遮罩，透明区域被填成白色；同时原 `.ico` 的五个尺寸全是 PNG 压缩条目，而标题栏 / 任务栏走的老式图标路径对它支持不佳
+- 现在 Windows 改用满幅不透明的专用图标（同一套图形，四角合成为底色），`.ico` 小尺寸改存 32bpp BMP 条目；macOS 与托盘图标保持原样的圆角透明
+
+v0.8.0 的主要更新（替换回填、预选上下文、对话发图等）见 [CHANGELOG](./CHANGELOG.md)。
 
 历史版本与全部产物：[GitHub Releases](https://github.com/zcx960/AIA-selection-assistan/releases)。
 
 > README 描述的是当前 `main` 分支能力；若直接下载 Release，请以对应版本的产物为准。
 
-> macOS 包未做代码签名，首次打开请到「系统设置 → 隐私与安全性」放行；Windows 包未做代码签名，SmartScreen 提示时选「仍要运行」即可。
+> macOS 包未做代码签名，首次打开请到「系统设置 → 隐私与安全性」放行。
+>
+> Windows 包同样未做代码签名：SmartScreen 提示时选「仍要运行」即可。如果系统开启了**智能应用控制（Smart App Control）**，安装包可能会被直接拦下 —— 该功能不支持给单个应用加白名单，只能在「Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置」里整体关闭。注意较早的 Windows 11 版本关闭后无法自行恢复（需重置系统），24H2 / 25H2 在 2026 年 4 月更新（KB5083769）之后才可以随时开关。
 
 ## 项目概览
 
@@ -150,6 +151,7 @@ AIA划词助手是一个常驻菜单栏 / 系统托盘的小工具。在任意�
 - 支持系统托盘驻留
 - 关闭主窗口后会缩到托盘，不会直接退出
 - 划词监听效果可能会受目标应用、管理员权限或输入法状态影响
+- 安装包未做代码签名：SmartScreen 提示时选「仍要运行」；若系统启用了智能应用控制（Smart App Control），需要先整体关闭它才能安装（详见上文「下载」小节）
 
 ## 安装与本地开发
 

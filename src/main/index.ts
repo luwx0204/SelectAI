@@ -54,10 +54,22 @@ function createNativeImageFromFile(paths: string[], fallbackDataUrl: string): El
   return nativeImage.createFromDataURL(fallbackDataUrl)
 }
 
+// Windows draws the window / taskbar icon straight from the bitmap, with no
+// corner mask of its own. The shared artwork is a rounded square, so its four
+// corners are transparent and the shell fills them in as white wedges. The
+// `icon-win` variants are the same artwork flattened onto its own background —
+// a full-bleed opaque square. macOS and the tray keep the transparent version,
+// since both honour alpha and the rounding reads better there.
+const windowIconFiles =
+  process.platform === 'win32' ? ['icon-win.png', 'icon.png'] : ['icon.png']
+
 const appIcon = createNativeImageFromFile(
   app.isPackaged
-    ? [join(process.resourcesPath, 'build', 'icon.png')]
-    : [join(__dirname, '../../build/icon.png'), join(process.cwd(), 'build', 'icon.png')],
+    ? windowIconFiles.map((file) => join(process.resourcesPath, 'build', file))
+    : [
+        ...windowIconFiles.map((file) => join(__dirname, '../../build', file)),
+        ...windowIconFiles.map((file) => join(process.cwd(), 'build', file))
+      ],
   APP_ICON_DATA_URL
 )
 const trayIcon = createNativeImageFromFile(
