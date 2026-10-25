@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to `AIA-selection-assistan`.
+Thanks for your interest in contributing to `swift-pick`.
 
 ## Setup
 
@@ -89,7 +89,7 @@ must use pnpm >= 11, migrate the whitelist to `pnpm-workspace.yaml` (as `allowBu
 whole dev stack (electron + electron-vite) exits within seconds — no error, no stack trace.
 
 **Root cause**: the dev build and the packaged app share the same `userData` directory
-(`%APPDATA%/selection-assistant-lite`, derived from `package.json` `name`). Electron's
+(`%APPDATA%/swift-pick`, derived from `package.json` `name`). Electron's
 single-instance lock (`requestSingleInstanceLock()`) is keyed on that path, so the dev
 instance fails to acquire the lock and quits gracefully — hence no error output.
 electron-vite exits with it.

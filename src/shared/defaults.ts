@@ -45,13 +45,6 @@ export const defaultActions: ActionItem[] = [
     type: 'copy'
   },
   {
-    id: 'speak',
-    name: 'Speak',
-    enabled: true,
-    icon: 'volume-2',
-    type: 'speak'
-  },
-  {
     id: 'polish',
     name: 'Polish',
     enabled: true,
@@ -96,6 +89,7 @@ export const defaultSettings: AppSettings = {
   autoClose: false,
   autoPin: false,
   actionWindowClose: 'hide',
+  multiActionWindow: true,
   raceResponse: 'abort',
   prebuildActionWindow: true,
   statsEnabled: false,

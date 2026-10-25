@@ -6,6 +6,7 @@ import { isOwnProgram, shouldProcessProgram } from '@shared/selectionFilter'
 import type { ActionItem, ActionPayload, AppSettings, ReplaceSelectionResult, SelectedTextPayload } from '@shared/types'
 import { setLastSelection } from './preWindowStore'
 import { loadRenderer } from './loadRenderer'
+import { secureExternalLinks } from './windowSecurity'
 import { isMac, isWin } from './platform'
 import {
   INITIAL_SELECT_ALL_STATE,
@@ -303,7 +304,33 @@ export class SelectionService {
   // window restores in place with fresh content. An in-flight window is shown
   // by its existing ready-to-show callback (positioned by the first trigger —
   // accepted trade-off for a simpler state machine).
+  // Multi-window mode: every trigger gets its own result window, so several
+  // selections can be explained side by side. Capped to avoid runaway piles:
+  // the oldest window is destroyed when the cap is reached.
+  private static readonly MAX_ACTION_WINDOWS = 8
+
+  private openActionWindowMulti(payload: ActionPayload, show: (win: BrowserWindow) => void): void {
+    const living = Array.from(this.actionWindows).filter(
+      (win) => !win.isDestroyed() && !this.closingWindows.has(win)
+    )
+    if (living.length >= SelectionService.MAX_ACTION_WINDOWS) {
+      const oldest = living[0]
+      this.closingWindows.add(oldest)
+      oldest.destroy()
+    }
+    const win = this.createActionWindow()
+    this.pendingInitialPayload.set(win.webContents.id, payload)
+    win.once('ready-to-show', () => {
+      this.readyWindows.add(win)
+      if (!win.isDestroyed()) show(win)
+    })
+  }
+
   private openActionWindow(payload: ActionPayload, show: (win: BrowserWindow) => void): void {
+    if (this.getSettings().multiActionWindow) {
+      this.openActionWindowMulti(payload, show)
+      return
+    }
     const existing = Array.from(this.actionWindows).find(
       (win) => !win.isDestroyed() && !this.closingWindows.has(win)
     )
@@ -446,6 +473,7 @@ export class SelectionService {
       }
     })
 
+    secureExternalLinks(win)
     const wcId = win.webContents.id
     win.on('close', (event) => {
       // The "close action" setting: hide keeps the

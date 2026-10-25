@@ -8,8 +8,8 @@ type Dict = Record<string, string>
 const dictionaries: Record<AppLanguage, Dict> = {
   en: {
     loading: 'Loading...',
-    appTitle: 'AIA划词助手',
-    appSubtitle: 'AIA Selection Assistant keeps selection AI actions one click away.',
+    appTitle: 'SelectAI',
+    appSubtitle: 'SelectAI keeps selection AI actions one click away.',
     settings: 'Settings',
     settingsSections: 'Settings sections',
     sectionApi: 'API',
@@ -112,6 +112,8 @@ const dictionaries: Record<AppLanguage, Dict> = {
     actionWindowCloseDesc: 'Hide keeps the window pooled for instant reuse (content stays in memory); destroy closes it for real.',
     actionWindowCloseHide: 'Hide (fast)',
     actionWindowCloseDestroy: 'Destroy (thorough)',
+    multiActionWindow: 'Multi-window results',
+    multiActionWindowDesc: 'Each selection action opens its own result window (up to 8), so several explanations stay open side by side.',
     raceResponse: 'Race response',
     raceResponseDesc:
       'What happens to an in-flight response when its window is destroyed. Abort cuts it immediately; complete runs it to the end in the background (needs local recording, otherwise the result is dropped).',
@@ -192,7 +194,6 @@ const dictionaries: Record<AppLanguage, Dict> = {
     copyType: 'Copy',
     searchType: 'Search',
     promptType: 'Prompt',
-    speakType: 'Speak',
     unpin: 'Unpin',
     pin: 'Pin',
     minimize: 'Minimize',
@@ -208,13 +209,12 @@ const dictionaries: Record<AppLanguage, Dict> = {
     action_summarize: 'Summarize',
     action_search: 'Search',
     action_copy: 'Copy',
-    action_speak: 'Speak',
     action_polish: 'Polish',
     action_quote: 'Pre-select'
   },
   'zh-CN': {
     loading: '加载中...',
-    appTitle: 'AIA划词助手',
+    appTitle: 'SelectAI',
     appSubtitle: '轻量常驻，划词唤起，用 AI 快速处理选中文本。',
     settings: '设置',
     settingsSections: '设置分类',
@@ -317,6 +317,8 @@ const dictionaries: Record<AppLanguage, Dict> = {
     actionWindowCloseDesc: '隐藏 = 窗口留池、下次划词秒开（内容暂留内存）；销毁 = 彻底关闭释放。',
     actionWindowCloseHide: '隐藏（快）',
     actionWindowCloseDestroy: '销毁（彻底）',
+    multiActionWindow: '多窗口结果',
+    multiActionWindowDesc: '每次划词动作都开一个独立结果窗口（最多 8 个），多个解释可并排对照看。',
     raceResponse: '竞态响应',
     raceResponseDesc: '窗口销毁时进行中响应的处置。断尾 = 立即停止；整尾 = 后台跑完（需开启本地记录，否则结果丢弃）。',
     raceResponseAbort: '断尾（立即停止）',
@@ -390,7 +392,6 @@ const dictionaries: Record<AppLanguage, Dict> = {
     copyType: '复制',
     searchType: '搜索',
     promptType: 'AI 提示词',
-    speakType: '朗读',
     unpin: '取消置顶',
     pin: '置顶',
     minimize: '最小化',
@@ -406,7 +407,6 @@ const dictionaries: Record<AppLanguage, Dict> = {
     action_summarize: '总结',
     action_search: '搜索',
     action_copy: '复制',
-    action_speak: '朗读',
     action_polish: '润色',
     action_quote: '预选'
   }

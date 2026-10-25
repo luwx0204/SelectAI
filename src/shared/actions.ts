@@ -301,7 +301,7 @@ function normalizeActionType(value: unknown): ActionType | null {
   // here made every settings round-trip drop user-customized quote actions
   // (then the migration logic re-added a default one: disabled state, rename
   // and shortcut silently lost).
-  return value === 'copy' || value === 'search' || value === 'prompt' || value === 'speak' || value === 'quote'
+  return value === 'copy' || value === 'search' || value === 'prompt' || value === 'quote'
     ? value
     : null
 }
@@ -339,10 +339,10 @@ function normalizeActionItems(actions: unknown): ActionItem[] {
 
 function appendMissingBuiltInActions(actions: ActionItem[]): ActionItem[] {
   // Built-in actions introduced after a user's settings were saved are
-  // merged in on load (speak, quote). The guard keeps the "user cleared
+  // merged in on load (quote). The guard keeps the "user cleared
   // every built-in action" state stable: with no built-in action left to
   // anchor on, nothing is re-added.
-  const migratingIds = ['speak', 'quote']
+  const migratingIds = ['quote']
   const knownIds = new Set(actions.map((action) => action.id))
   const missing = migratingIds.filter((id) => !knownIds.has(id))
   if (missing.length === 0) return actions

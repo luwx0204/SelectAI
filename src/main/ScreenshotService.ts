@@ -297,7 +297,7 @@ export class ScreenshotService {
       minWidth: 380 + PREVIEW_SHADOW_PADDING * 2,
       minHeight: 360 + PREVIEW_SHADOW_PADDING * 2,
       icon: this.windowIcon,
-      title: 'AIA划词助手',
+      title: 'SelectAI',
       autoHideMenuBar: true,
       show: false,
       frame: false,

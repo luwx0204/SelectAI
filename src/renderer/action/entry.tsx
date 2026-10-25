@@ -272,7 +272,7 @@ function ChatTurns({
                 </div>
               )}
               {turn.text && turn.reasoningTime !== undefined && (
-                <ReasoningSummary seconds={turn.reasoningTime} label={isZh ? '思考了' : 'Thought for'} />
+                <ReasoningSummary seconds={turn.reasoningTime} label={isZh ? '思考了' : 'Thought for'} reasoning={turn.reasoning} />
               )}
               {turn.text ? (
                 <React.Suspense fallback={null}>
@@ -578,11 +578,6 @@ function InputResult({ payload, settings, t, pinned, togglePin }: ResultProps) {
     }
     if (payload.action.type === 'copy') {
       void navigator.clipboard.writeText(value)
-      void window.assistantLite.windowControls.close()
-      return
-    }
-    if (payload.action.type === 'speak') {
-      void window.assistantLite.speech.speak(value)
       void window.assistantLite.windowControls.close()
       return
     }

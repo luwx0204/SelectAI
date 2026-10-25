@@ -2,7 +2,7 @@ import '../styles.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { buildSearchUrl } from '@shared/actions'
-import { APP_ICON_SVG } from '@shared/brand'
+import { APP_ICON_PNG_DATA_URL } from '@shared/brand'
 import type { ActionItem, SelectedTextPayload } from '@shared/types'
 import { Icon } from '../icons'
 import { useSettings } from '../useSettings'
@@ -74,12 +74,6 @@ function ToolbarApp() {
       return
     }
 
-    if (action.type === 'speak') {
-      await window.assistantLite.speech.speak(selectedText)
-      await window.assistantLite.selection.hideToolbar()
-      return
-    }
-
     await window.assistantLite.selection.processAction({
       action,
       selectedText,
@@ -92,7 +86,7 @@ function ToolbarApp() {
 
   return (
     <div className="toolbar-root" ref={rootRef}>
-      {settings.showToolbarAppIcon && <div className="toolbar-logo" dangerouslySetInnerHTML={{ __html: APP_ICON_SVG }} />}
+      {settings.showToolbarAppIcon && <div className="toolbar-logo"><img src={APP_ICON_PNG_DATA_URL} alt="SelectAI" draggable={false} /></div>}
       {enabledActions.map((action) => (
         <button
           className={`toolbar-button${quotedActionId === action.id ? ' toolbar-button--quoted' : ''}`}

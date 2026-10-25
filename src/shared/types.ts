@@ -4,7 +4,7 @@ export type FilterMode = 'default' | 'whitelist' | 'blacklist'
 export type ActionWindowCloseMode = 'hide' | 'destroy'
 /** What happens to an in-flight stream when its window is destroyed (or a racing request takes over, once implemented): 'abort' cuts it, 'complete' lets it finish in the background. */
 export type RaceResponseMode = 'abort' | 'complete'
-export type ActionType = 'copy' | 'search' | 'prompt' | 'speak' | 'quote'
+export type ActionType = 'copy' | 'search' | 'prompt' | 'quote'
 /** How much detail usage records keep: 'full' keeps everything, 'noSource' drops the source app name (privacy-sensitive). */
 export type StatsDetailLevel = 'full' | 'noSource'
 /** Which metadata fields the context injection may append to the AI system prompt. */
@@ -72,6 +72,8 @@ export interface AppSettings {
   autoClose: boolean
   autoPin: boolean
   actionWindowClose: ActionWindowCloseMode
+  /** Each selection action opens its own result window instead of reusing one. */
+  multiActionWindow: boolean
   raceResponse: RaceResponseMode
   prebuildActionWindow: boolean
   statsEnabled: boolean

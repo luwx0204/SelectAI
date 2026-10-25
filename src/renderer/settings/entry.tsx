@@ -1031,6 +1031,9 @@ function SettingsApp() {
                 <option value="destroy">{t('actionWindowCloseDestroy')}</option>
               </select>
             </SettingRow>
+            <SettingRow title={t('multiActionWindow')} description={t('multiActionWindowDesc')}>
+              <Toggle checked={settings.multiActionWindow} label={t('multiActionWindow')} onChange={(multiActionWindow) => update({ multiActionWindow })} />
+            </SettingRow>
             <SettingRow title={t('raceResponse')} description={t('raceResponseDesc')}>
               <select
                 value={settings.raceResponse}

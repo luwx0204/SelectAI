@@ -47,13 +47,6 @@ describe('selection actions', () => {
     expect(isUriOrFilePath('hello world')).toBe(false)
   })
 
-  it('includes a default speak action for reading selected text aloud', () => {
-    expect(defaultSettings.actions.find((action) => action.id === 'speak')).toMatchObject({
-      type: 'speak',
-      icon: 'volume-2'
-    })
-  })
-
   it('merges provider settings without dropping defaults', () => {
     const merged = mergeSettings(defaultSettings, { provider: { model: 'custom-model' } })
     expect(merged.provider.model).toBe('custom-model')
@@ -288,23 +281,13 @@ describe('selection actions', () => {
     expect(normalized.actions.find((action) => action.id === 'translate')?.promptTemplate).toBeUndefined()
   })
 
-  it('adds the built-in speak action when normalizing settings from before speech support', () => {
-    const oldActions = defaultSettings.actions.filter((action) => action.id !== 'speak')
-    const normalized = normalizeSettings({ ...defaultSettings, actions: oldActions })
-
-    expect(normalized.actions.find((action) => action.id === 'speak')).toMatchObject({
-      type: 'speak',
-      icon: 'volume-2'
-    })
-  })
-
   it('preserves valid action types and drops unsupported ones', () => {
     const normalized = normalizeSettings({
       ...defaultSettings,
       actions: [
         { id: 'a', name: 'A', enabled: true, icon: 'sparkles', type: 'prompt' },
         { id: 'b', name: 'B', enabled: true, icon: 'copy', type: 'copy' },
-        { id: 'd', name: 'D', enabled: true, icon: 'volume-2', type: 'speak' },
+        { id: 'd', name: 'D', enabled: true, icon: 'quote', type: 'quote' },
         { id: 'c', name: 'C', enabled: true, icon: 'book-open', type: 'dictionary' }
       ]
     })
@@ -315,7 +298,7 @@ describe('selection actions', () => {
     expect(ids).not.toContain('c')
     expect(normalized.actions.find((action) => action.id === 'a')?.type).toBe('prompt')
     expect(normalized.actions.find((action) => action.id === 'b')?.type).toBe('copy')
-    expect(normalized.actions.find((action) => action.id === 'd')?.type).toBe('speak')
+    expect(normalized.actions.find((action) => action.id === 'd')?.type).toBe('quote')
   })
 
   it('keeps user-added actions with shortcut and reasoning', () => {

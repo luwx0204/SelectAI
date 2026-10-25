@@ -27,7 +27,23 @@ function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
   )
 }
 
-const COMPONENTS = { pre: CodeBlock }
+const COMPONENTS = {
+  pre: CodeBlock,
+  // Links must never navigate the app window — open in the system browser.
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    const { href, onClick, ...rest } = props
+    const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault()
+      if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+        void window.assistantLite.app.openExternal(href)
+      }
+      onClick?.(event)
+    }
+    return (
+      <a href={href} onClick={handleClick} target="_blank" rel="noopener noreferrer" {...rest} />
+    )
+  }
+}
 
 export function MarkdownView({ children }: { children: string }) {
   return (

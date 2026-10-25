@@ -39,8 +39,30 @@ export function ReasoningLine({
   )
 }
 
-/** Collapsed post-thinking note shown above the answer ("Thought for 4s"). */
-export function ReasoningSummary({ seconds, label }: { seconds: number; label: string }) {
+/** Collapsed post-thinking note shown above the answer ("Thought for 4s").
+ *  Collapsed by default; click to expand the full reasoning text. */
+export function ReasoningSummary({
+  seconds,
+  label,
+  reasoning,
+}: {
+  seconds: number
+  label: string
+  reasoning?: string
+}) {
+  const [expanded, setExpanded] = React.useState(false)
   if (!(seconds >= 0.5)) return null
-  return <div className="reasoning-summary">✦ {label} {Math.max(1, Math.round(seconds))}s</div>
+  const expandable = !!reasoning
+  return (
+    <div className="reasoning-summary-wrap">
+      <div
+        className="reasoning-summary"
+        onClick={expandable ? () => setExpanded((v) => !v) : undefined}
+        style={expandable ? { cursor: 'pointer' } : undefined}
+      >
+        ✦ {label} {Math.max(1, Math.round(seconds))}s{expandable ? (expanded ? ' ▲' : ' ▼') : ''}
+      </div>
+      {expanded && reasoning && <div className="reasoning-summary__full">{reasoning}</div>}
+    </div>
+  )
 }

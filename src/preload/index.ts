@@ -79,10 +79,6 @@ const api = {
       }
     }
   },
-  speech: {
-    speak: (text: string): Promise<boolean> => ipcRenderer.invoke(IPC.SpeechSpeak, text),
-    stop: (): Promise<void> => ipcRenderer.invoke(IPC.SpeechStop)
-  },
   hotkeyCapture: {
     start: (): Promise<number | null> => ipcRenderer.invoke(IPC.HotkeyCaptureStart),
     stop: (): Promise<void> => ipcRenderer.invoke(IPC.HotkeyCaptureStop),

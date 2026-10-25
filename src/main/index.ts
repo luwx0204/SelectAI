@@ -10,12 +10,12 @@ import { APP_ICON_DATA_URL, APP_TRAY_DATA_URL } from '@shared/brand'
 import type { AiChunkPayload, AiStreamRequest, SettingsPatch } from '@shared/types'
 import { listModels, streamChatMessages, testModel, type ProviderFetch } from './ai/OpenAICompatibleClient'
 import { decideSearch, formatSearchContext, searchExa } from './ai/WebSearch'
+import { secureExternalLinks } from './windowSecurity'
 import { abortStream, findRacingStreams, registerStream, unregisterStream } from './aiStreamRegistry'
 import { appendStatsRecord, type StatsRecord } from './statsStore'
 import { startHotkeyCapture, stopHotkeyCapture } from './hotkeyCapture'
 import { ScreenshotService } from './ScreenshotService'
 import { SelectionService } from './SelectionService'
-import { SpeechService } from './SpeechService'
 import { getSettings, onSettingsChanged, updateSettings } from './settingsStore'
 import { clearPreWindows, getLastSelection, listPreWindows, removePreWindow, savePreWindow } from './preWindowStore'
 import { loadRenderer } from './loadRenderer'
@@ -74,8 +74,9 @@ const appIcon = createNativeImageFromFile(
 )
 const trayIcon = createNativeImageFromFile(
   app.isPackaged
-    ? [join(process.resourcesPath, 'build', 'icon.png')]
-    : [join(__dirname, '../../build/icon.png'), join(process.cwd(), 'build', 'icon.png')],
+    ? [join(process.resourcesPath, 'build', 'tray-icon.png'), join(process.resourcesPath, 'build', 'icon.png')]
+    : [join(__dirname, '../../build/tray-icon.png'), join(process.cwd(), 'build/tray-icon.png'),
+       join(__dirname, '../../build/icon.png'), join(process.cwd(), 'build/icon.png')],
   APP_TRAY_DATA_URL
 )
 const selectionService = new SelectionService(getSettings, preloadPath, rendererDir, appIcon, (title, message) => {
@@ -85,27 +86,24 @@ const selectionService = new SelectionService(getSettings, preloadPath, renderer
   if (tray && isWin) tray.displayBalloon({ title, content: message })
 })
 const screenshotService = new ScreenshotService(getSettings, preloadPath, rendererDir, appIcon)
-const speechService = new SpeechService()
 
 function getTrayIcon(): Electron.NativeImage {
   return trayIcon.resize({ width: 18, height: 18 })
 }
 
-function mainText(key: 'enable' | 'disable' | 'settings' | 'chat' | 'stopSpeech' | 'quit', language: string): string {
+function mainText(key: 'enable' | 'disable' | 'settings' | 'chat' | 'quit', language: string): string {
   const zh = {
-    enable: '启用AIA划词助手',
-    disable: '停用AIA划词助手',
+    enable: '启用SelectAI',
+    disable: '停用SelectAI',
     settings: '设置',
     chat: '对话',
-    stopSpeech: '停止朗读',
     quit: '退出'
   }
   const en = {
-    enable: 'Enable AIA Selection Assistant',
-    disable: 'Disable AIA Selection Assistant',
+    enable: 'Enable SelectAI',
+    disable: 'Disable SelectAI',
     settings: 'Settings',
     chat: 'Chat',
-    stopSpeech: 'Stop speaking',
     quit: 'Quit'
   }
   return (language === 'zh-CN' ? zh : en)[key]
@@ -125,7 +123,7 @@ function createSettingsWindow(): BrowserWindow {
     minWidth: 380,
     minHeight: 560,
     icon: appIcon,
-    title: 'AIA划词助手',
+    title: 'SelectAI',
     autoHideMenuBar: true,
     webPreferences: {
       preload: preloadPath,
@@ -134,6 +132,7 @@ function createSettingsWindow(): BrowserWindow {
       sandbox: false
     }
   })
+  secureExternalLinks(settingsWindow)
   settingsWindow.on('close', (event) => {
     if (isQuitting) return
     event.preventDefault()
@@ -187,7 +186,7 @@ function openChatWindow(source: ChatOpenSource): void {
     minWidth: 360 + CHAT_SHADOW_PADDING * 2,
     minHeight: 360 + CHAT_SHADOW_PADDING * 2,
     icon: appIcon,
-    title: 'AIA划词助手',
+    title: 'SelectAI',
     autoHideMenuBar: true,
     show: false,
     frame: false,
@@ -204,6 +203,7 @@ function openChatWindow(source: ChatOpenSource): void {
   }) as ChatWindow
   win.chatOpenSource = source
   chatWindow = win
+  secureExternalLinks(win)
   win.on('closed', () => {
     if (chatWindow === win) chatWindow = null
     // The pool lives for exactly one chat window session: closing the window
@@ -218,9 +218,14 @@ function openChatWindow(source: ChatOpenSource): void {
 
 function createTray(): void {
   tray = new Tray(getTrayIcon())
-  tray.setToolTip('AIA划词助手')
   tray.on('click', () => createSettingsWindow())
   refreshTrayMenu()
+  // Windows quirk: setToolTip() issued synchronously after `new Tray()` can
+  // lose the race with the icon registration, leaving an empty tooltip box
+  // on hover. Defer it a tick so the update lands after the icon is up.
+  setImmediate(() => {
+    if (tray) tray.setToolTip('SelectAI')
+  })
 }
 
 function refreshTrayMenu(): void {
@@ -238,7 +243,6 @@ function refreshTrayMenu(): void {
       },
       { label: mainText('settings', settings.language), click: () => createSettingsWindow() },
       { label: mainText('chat', settings.language), click: () => openChatWindow('tray') },
-      { label: mainText('stopSpeech', settings.language), click: () => speechService.stop() },
       { type: 'separator' },
       {
         label: mainText('quit', settings.language),
@@ -347,8 +351,6 @@ function registerIpc(): void {
     return settings
   })
   ipcMain.handle(IPC.OpenExternal, (_event, url: string) => shell.openExternal(url))
-  ipcMain.handle(IPC.SpeechSpeak, (_event, text: string) => speechService.speak(text))
-  ipcMain.handle(IPC.SpeechStop, () => speechService.stop())
 
   // Attach button: read an image from the system clipboard. Read-only —
   // empty or non-image clipboard yields null so the renderer keeps its state.
@@ -617,6 +619,5 @@ if (!app.requestSingleInstanceLock()) {
     globalShortcut.unregisterAll()
     selectionService.dispose()
     screenshotService.dispose()
-    speechService.dispose()
   })
 }

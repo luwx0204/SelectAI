@@ -65,7 +65,7 @@ function parseExaToolText(text: string): ExaResult[] {
 export async function searchExa(query: string, signal: AbortSignal, numResults = 10): Promise<ExaResult[]> {
   const transport = new StreamableHTTPClientTransport(new URL(EXA_MCP_URL))
   const client = new Client(
-    { name: 'aia-selection-assistant', version: '0.2.0' },
+    { name: 'select-ai', version: '0.2.0' },
     { capabilities: {} }
   )
   try {

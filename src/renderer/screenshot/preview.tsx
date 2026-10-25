@@ -300,7 +300,7 @@ function PreviewApp() {
                   </div>
                 )}
                 {turn.text && turn.reasoningTime !== undefined && (
-                  <ReasoningSummary seconds={turn.reasoningTime} label={isZh ? '思考了' : 'Thought for'} />
+                  <ReasoningSummary seconds={turn.reasoningTime} label={isZh ? '思考了' : 'Thought for'} reasoning={turn.reasoning} />
                 )}
                 {turn.text ? (
                   <React.Suspense fallback={null}>

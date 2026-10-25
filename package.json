@@ -1,9 +1,9 @@
 {
-  "name": "selection-assistant-lite",
-  "version": "0.8.1",
-  "description": "轻量跨平台 AI 划词助手，支持 OpenAI-compatible 与 Anthropic API。",
+  "name": "select-ai",
+  "version": "1.0.5",
+  "description": "轻量跨平台 AI 划词工具，支持 OpenAI-compatible 与 Anthropic API。",
   "main": "out/main/index.js",
-  "author": "selection-assistant-lite contributors",
+  "author": "SelectAI contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -56,6 +56,7 @@
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "resedit": "^3.1.0",
     "typescript": "^5.7.2",
     "vite": "^5.4.21",
     "vitest": "^2.1.8"

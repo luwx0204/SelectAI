@@ -1,8 +1,7 @@
 <div align="center">
-  <img src="./docs/images/icon-readme-light.svg#gh-light-mode-only" alt="AIA Selection Assistant icon" width="88" />
-  <img src="./docs/images/icon-readme-dark.svg#gh-dark-mode-only" alt="AIA Selection Assistant icon" width="88" />
+  <img src="./build/icon.png" alt="SwiftPick icon" width="88" />
 
-  <h1>AIA Selection Assistant</h1>
+  <h1>SwiftPick</h1>
 
   <p>Highlight text, snap a screenshot, ask AI — skip a few window switches, skip a lot of copy-pasting.</p>
 
@@ -23,7 +22,7 @@
   </p>
 </div>
 
-AIA Selection Assistant lives in your menu bar / system tray. Highlight some text in any app and a small toolbar slides in next to it — one click to translate, explain, summarize, rewrite, search, copy, or read aloud. Prefer the keyboard? A global shortcut works too. Toolbar actions can be added, renamed, re-iconed, reordered, edited, or deleted; each prompt action can also use its own model template, adjust reasoning intensity, or open a type-in window from its own shortcut. For actions that rewrite the original text, such as Polish, the result window also gets a **Replace** button that writes the AI output straight back over the selection in the source app — no copy-paste round trip (currently Windows x64, Polish action only).
+SwiftPick lives in your menu bar / system tray. Highlight some text in any app and a small toolbar slides in next to it — one click to translate, explain, summarize, rewrite, search, copy, or read aloud. Prefer the keyboard? A global shortcut works too. Toolbar actions can be added, renamed, re-iconed, reordered, edited, or deleted; each prompt action can also use its own model template, adjust reasoning intensity, or open a type-in window from its own shortcut. For actions that rewrite the original text, such as Polish, the result window also gets a **Replace** button that writes the AI output straight back over the selection in the source app — no copy-paste round trip (currently Windows x64, Polish action only).
 
 It also ships a built-in region screenshot tool: drag to select an area, annotate with pen or arrows (brush size is a quick slider away), then save as PNG, copy to clipboard, pin to the desktop, or hand the image straight to AI for vision-based analysis. Pinned screenshots support wheel zoom, drag-to-move, opacity tweaking, and a right-click menu to re-send them to AI.
 
