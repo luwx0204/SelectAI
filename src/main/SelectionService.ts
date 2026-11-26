@@ -33,6 +33,12 @@ const ACTION_SHADOW_PADDING = 18
 // rounds: focus 15-21ms, readback fine at +120ms).
 const REPLACE_FOCUS_DELAY_MS = 120
 
+// How long after a hotkey-summoned toolbar appears key-downs cannot hide
+// it: covers the hook's async delivery of the combo's own key-down plus
+// the OS key-repeat initial delay (~0.5s) with margin. Auto-repeats after
+// the window are still ignored via held-state tracking in the listener.
+const HOTKEY_HIDE_SUPPRESS_MS = 1200
+
 // Selection text shape can differ between the hook's first read and the
 // verification readback (CRLF vs LF); compare on normalized form only.
 const normalizeForCompare = (text: string): string => text.replace(/\r\n|\r/g, '\n')
@@ -69,6 +75,14 @@ export class SelectionService {
   private toolbarWidth = DEFAULT_TOOLBAR_WIDTH
   private lastActionSize = { width: ACTION_WIDTH, height: ACTION_HEIGHT }
   private hideListenerActive = false
+  // Hotkey-summoned toolbar protection (see processShortcutSelection): when
+  // the toolbar was last summoned by the trigger hotkey, and the held-state
+  // of the last non-modifier key seen by the hide listener (a second
+  // key-down for the same key with no key-up in between is an OS
+  // auto-repeat, not a fresh press).
+  private hotkeyShownAt = 0
+  private lastHideKeyVk: number | null = null
+  private lastHideKeyReleased = true
   // Own executable name for the self-selection ban (handleSelection): the hook
   // reports the exe the selection happened in, so comparing against
   // process.execPath covers dev (electron.exe) and packaged builds without
@@ -167,6 +181,15 @@ export class SelectionService {
     // (e.g. after Ctrl+A select-all). Hide first — handleSelection drops
     // incoming selections while the toolbar is visible, so re-pressing the
     // hotkey refreshes onto the current selection instead of being discarded.
+    // Stamp the summon time: the combo's main key-down reaches the hook
+    // asynchronously and can land AFTER the toolbar appears, where the
+    // key-down hide listener would instantly close what the hotkey opened
+    // (globalShortcut fires on key-down, unlike the old select-all trigger
+    // which fired on key-up). handleKeyDownHide ignores key-downs inside
+    // the suppression window and OS auto-repeats of the held combo key.
+    this.hotkeyShownAt = Date.now()
+    this.lastHideKeyVk = null
+    this.lastHideKeyReleased = true
     this.hideToolbar()
     const selection = this.hook.getCurrentSelection()
     if (selection) this.handleSelection(selection)
@@ -715,9 +738,12 @@ export class SelectionService {
 
   private startHideListeners(): void {
     if (!this.hook || this.hideListenerActive) return
+    this.lastHideKeyVk = null
+    this.lastHideKeyReleased = true
     this.hook.on('mouse-down', this.handleMouseDownHide)
     this.hook.on('mouse-wheel', this.handleHide)
     this.hook.on('key-down', this.handleKeyDownHide)
+    this.hook.on('key-up', this.handleKeyUpHide)
     this.hideListenerActive = true
   }
 
@@ -726,6 +752,7 @@ export class SelectionService {
     this.hook.off('mouse-down', this.handleMouseDownHide)
     this.hook.off('mouse-wheel', this.handleHide)
     this.hook.off('key-down', this.handleKeyDownHide)
+    this.hook.off('key-up', this.handleKeyUpHide)
     this.hideListenerActive = false
   }
 
@@ -745,7 +772,23 @@ export class SelectionService {
 
   private handleKeyDownHide = (event: KeyboardEventData): void => {
     if (this.isModifierKey(event.vkCode)) return
+    // Track held-state BEFORE the guards: a key-down for the key already
+    // held (no key-up since) is an OS auto-repeat, and repeats must stay
+    // classified as repeats even when the suppression window below eats
+    // the first of them.
+    const isRepeat = event.vkCode === this.lastHideKeyVk && !this.lastHideKeyReleased
+    this.lastHideKeyVk = event.vkCode
+    this.lastHideKeyReleased = false
+    if (isRepeat) return
+    // The trigger hotkey's own key-down (delivered late by the hook, right
+    // after the toolbar it summoned appeared) must not close it. Mouse and
+    // wheel hides are unaffected; keyboard hides resume after the window.
+    if (Date.now() - this.hotkeyShownAt < HOTKEY_HIDE_SUPPRESS_MS) return
     this.hideToolbar()
+  }
+
+  private handleKeyUpHide = (event: KeyboardEventData): void => {
+    if (event.vkCode === this.lastHideKeyVk) this.lastHideKeyReleased = true
   }
 
   private isModifierKey(vkCode: number): boolean {
