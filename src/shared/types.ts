@@ -63,8 +63,6 @@ export interface AppSettings {
   theme: ThemeMode
   enabled: boolean
   triggerMode: TriggerMode
-  /** Pop the toolbar on Ctrl+A select-all (Windows only, independent of triggerMode). */
-  selectAllTrigger: boolean
   compactToolbar: boolean
   showToolbarAppIcon: boolean
   followToolbar: boolean

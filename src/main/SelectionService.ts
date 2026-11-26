@@ -8,12 +8,6 @@ import { setLastSelection } from './preWindowStore'
 import { loadRenderer } from './loadRenderer'
 import { secureExternalLinks } from './windowSecurity'
 import { isMac, isWin } from './platform'
-import {
-  INITIAL_SELECT_ALL_STATE,
-  isCtrlKeyCode,
-  stepSelectAllTrigger,
-  type SelectAllTriggerState
-} from './selectAllTrigger'
 import type {
   KeyboardEventData,
   MouseEventData,
@@ -39,15 +33,14 @@ const ACTION_SHADOW_PADDING = 18
 // rounds: focus 15-21ms, readback fine at +120ms).
 const REPLACE_FOCUS_DELAY_MS = 120
 
-// Delay between the Ctrl+A key-up and reading the selection: the target app
-// updates its selection while processing the key-down, so an immediate read
-// races it. 120ms mirrors the experiment-verified paste-back readback delay
-// above; recalibrate if slow-UIA apps miss the trigger.
-const SELECT_ALL_READ_DELAY_MS = 120
-
 // Selection text shape can differ between the hook's first read and the
 // verification readback (CRLF vs LF); compare on normalized form only.
 const normalizeForCompare = (text: string): string => text.replace(/\r\n|\r/g, '\n')
+
+/** vkCode of either physical Ctrl key: Windows VK_LCONTROL=162 / VK_RCONTROL=163, macOS 59 / 62. */
+function isCtrlKeyCode(vkCode: number, mac: boolean): boolean {
+  return mac ? vkCode === 59 || vkCode === 62 : vkCode === 162 || vkCode === 163
+}
 
 export class SelectionService {
   private hookCtor: SelectionHookConstructor | null = null
@@ -73,9 +66,6 @@ export class SelectionService {
   // setting. Reset on start() so stop→start cycles restore the setting.
   private forceClose = false
   private started = false
-  // Ctrl+A select-all trigger (Windows only): held-state of either Ctrl key,
-  // fed by the always-on key-down/key-up listeners hung in start().
-  private selectAllState: SelectAllTriggerState = INITIAL_SELECT_ALL_STATE
   private toolbarWidth = DEFAULT_TOOLBAR_WIDTH
   private lastActionSize = { width: ACTION_WIDTH, height: ACTION_HEIGHT }
   private hideListenerActive = false
@@ -124,15 +114,6 @@ export class SelectionService {
 
     if (!this.hook.start({ debug: !process.env.NODE_ENV || process.env.NODE_ENV === 'development' })) return false
 
-    // The select-all trigger rides the keyboard channel the hook already runs
-    // (the C++ low-level hook is always installed and always reports; adding a
-    // JS listener costs nothing extra). Windows only: the key event semantics
-    // verified here are the Windows low-level hook's.
-    if (isWin) {
-      this.hook.on('key-down', this.handleSelectAllKeyDown)
-      this.hook.on('key-up', this.handleSelectAllKeyUp)
-    }
-
     this.started = true
     this.applySettings(this.getSettings())
     return true
@@ -143,13 +124,6 @@ export class SelectionService {
     this.forceClose = true
     if (!this.hook || !this.started) return
     this.stopHideListeners()
-    if (isWin) {
-      this.hook.off('key-down', this.handleSelectAllKeyDown)
-      this.hook.off('key-up', this.handleSelectAllKeyUp)
-    }
-    // A lost key-up while stopping would leave stale held-state; reset on stop
-    // so start() begins from a clean slate.
-    this.selectAllState = INITIAL_SELECT_ALL_STATE
     this.hook.stop()
     this.hook.cleanup()
     this.toolbarWindow?.close()
@@ -187,7 +161,13 @@ export class SelectionService {
   }
 
   processShortcutSelection(): void {
-    if (!this.hook || !this.started || this.getSettings().triggerMode !== 'shortcut') return
+    if (!this.hook || !this.started || !this.getSettings().enabled) return
+    // Works in both trigger modes: in 'shortcut' mode this is the only way to
+    // pop the toolbar; in 'selected' mode it summons the toolbar on demand
+    // (e.g. after Ctrl+A select-all). Hide first — handleSelection drops
+    // incoming selections while the toolbar is visible, so re-pressing the
+    // hotkey refreshes onto the current selection instead of being discarded.
+    this.hideToolbar()
     const selection = this.hook.getCurrentSelection()
     if (selection) this.handleSelection(selection)
   }
@@ -750,34 +730,6 @@ export class SelectionService {
   }
 
   private handleHide = (): void => this.hideToolbar()
-
-  // Ctrl+A select-all trigger (plan D1/D2): pure-function state machine in
-  // selectAllTrigger.ts tracks Ctrl held-state; the 'A' key-up with Ctrl held
-  // fires the trigger chain. The listeners live for the whole service lifetime
-  // (independent of toolbar visibility), unlike the hide listeners above.
-  private handleSelectAllKeyDown = (event: KeyboardEventData): void => {
-    this.selectAllState = stepSelectAllTrigger(this.selectAllState, event, isMac, true).state
-  }
-
-  private handleSelectAllKeyUp = (event: KeyboardEventData): void => {
-    const step = stepSelectAllTrigger(this.selectAllState, event, isMac, false)
-    this.selectAllState = step.state
-    if (step.trigger) this.triggerSelectAllSelection()
-  }
-
-  private triggerSelectAllSelection(): void {
-    const settings = this.getSettings()
-    if (!settings.enabled || !settings.selectAllTrigger) return
-    setTimeout(() => {
-      if (!this.started || !this.hook) return
-      // handleSelection drops incoming selections while the toolbar is
-      // visible; hide first so Ctrl+A reads as "refresh onto the new
-      // selection" instead of being silently discarded.
-      this.hideToolbar()
-      const selection = this.hook.getCurrentSelection()
-      if (selection) this.handleSelection(selection)
-    }, SELECT_ALL_READ_DELAY_MS)
-  }
 
   private handleMouseDownHide = (event: MouseEventData): void => {
     if (!this.toolbarWindow || this.toolbarWindow.isDestroyed()) return

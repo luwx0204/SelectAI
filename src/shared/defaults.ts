@@ -79,9 +79,6 @@ export const defaultSettings: AppSettings = {
   theme: 'system',
   enabled: false,
   triggerMode: 'selected',
-  // Default on: the fork author's primary use case; users can turn it off in
-  // settings (non-text Ctrl+A stays silent because no text selection exists).
-  selectAllTrigger: true,
   compactToolbar: false,
   showToolbarAppIcon: true,
   followToolbar: true,

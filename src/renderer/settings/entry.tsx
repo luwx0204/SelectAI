@@ -875,13 +875,6 @@ function SettingsApp() {
                 <option value="shortcut">{t('triggerShortcut')}</option>
               </select>
             </SettingRow>
-            <SettingRow title={t('selectAllTrigger')} description={t('selectAllTriggerDesc')}>
-              <Toggle
-                checked={settings.selectAllTrigger}
-                label={t('selectAllTrigger')}
-                onChange={(selectAllTrigger) => update({ selectAllTrigger })}
-              />
-            </SettingRow>
           </SettingSection>
 
           <SettingSection title={t('selectionShortcutGroup')}>
