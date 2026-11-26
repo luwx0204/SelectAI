@@ -39,6 +39,13 @@ const REPLACE_FOCUS_DELAY_MS = 120
 // the window are still ignored via held-state tracking in the listener.
 const HOTKEY_HIDE_SUPPRESS_MS = 1200
 
+// Hotkey read retries: spacing and count for re-reading the selection when
+// the first hotkey read comes back empty (see processShortcutSelection).
+// Each native read can itself take ~0.3s when it falls through to the
+// clipboard path, so 2 retries span roughly a second in the worst case.
+const HOTKEY_READ_RETRY_DELAY_MS = 250
+const HOTKEY_READ_MAX_RETRIES = 2
+
 // Selection text shape can differ between the hook's first read and the
 // verification readback (CRLF vs LF); compare on normalized form only.
 const normalizeForCompare = (text: string): string => text.replace(/\r\n|\r/g, '\n')
@@ -83,6 +90,9 @@ export class SelectionService {
   private hotkeyShownAt = 0
   private lastHideKeyVk: number | null = null
   private lastHideKeyReleased = true
+  // Generation of the latest hotkey read; pending retries from an older
+  // press check it and stop instead of racing the newer chain.
+  private hotkeyReadGeneration = 0
   // Own executable name for the self-selection ban (handleSelection): the hook
   // reports the exe the selection happened in, so comparing against
   // process.execPath covers dev (electron.exe) and packaged builds without
@@ -192,7 +202,32 @@ export class SelectionService {
     this.lastHideKeyReleased = true
     this.hideToolbar()
     const selection = this.hook.getCurrentSelection()
-    if (selection) this.handleSelection(selection)
+    if (selection) {
+      this.handleSelection(selection)
+      return
+    }
+    // First read came back empty. Two transient causes are worth retrying:
+    // the native reader refuses outright while a mouse-event read is in
+    // flight (its is_processing guard), and slow apps can miss the
+    // clipboard fallback's short internal waits on the first synthetic
+    // copy. Each retry re-runs the full native chain (UIA -> Accessible ->
+    // clipboard) and re-stamps hotkeyShownAt so the hide-suppression
+    // window covers the eventual show. The generation counter keeps a
+    // re-press of the hotkey from interleaving two retry chains.
+    const generation = ++this.hotkeyReadGeneration
+    let retries = 0
+    const retry = (): void => {
+      if (!this.started || !this.hook || generation !== this.hotkeyReadGeneration) return
+      retries++
+      this.hotkeyShownAt = Date.now()
+      const next = this.hook.getCurrentSelection()
+      if (next) {
+        this.handleSelection(next)
+        return
+      }
+      if (retries < HOTKEY_READ_MAX_RETRIES) setTimeout(retry, HOTKEY_READ_RETRY_DELAY_MS)
+    }
+    setTimeout(retry, HOTKEY_READ_RETRY_DELAY_MS)
   }
 
   hideToolbar(): void {
