@@ -959,13 +959,6 @@ function SettingsApp() {
                 onChange={(compactToolbar) => update({ compactToolbar })}
               />
             </SettingRow>
-            <SettingRow title={t('showToolbarAppIcon')} description={t('showToolbarAppIconDesc')}>
-              <Toggle
-                checked={settings.showToolbarAppIcon}
-                label={t('showToolbarAppIcon')}
-                onChange={(showToolbarAppIcon) => update({ showToolbarAppIcon })}
-              />
-            </SettingRow>
           </SettingSection>
 
           <SettingSection title={t('selectionFilterGroup')}>

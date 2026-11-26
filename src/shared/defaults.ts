@@ -80,7 +80,6 @@ export const defaultSettings: AppSettings = {
   enabled: false,
   triggerMode: 'selected',
   compactToolbar: false,
-  showToolbarAppIcon: true,
   followToolbar: true,
   rememberWindowSize: false,
   autoClose: false,

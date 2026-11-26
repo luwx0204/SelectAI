@@ -64,7 +64,6 @@ export interface AppSettings {
   enabled: boolean
   triggerMode: TriggerMode
   compactToolbar: boolean
-  showToolbarAppIcon: boolean
   followToolbar: boolean
   rememberWindowSize: boolean
   autoClose: boolean

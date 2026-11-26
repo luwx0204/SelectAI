@@ -72,12 +72,6 @@ describe('selection actions', () => {
     expect(normalized.theme).toBe('system')
   })
 
-  it('defaults showToolbarAppIcon to true during normalization', () => {
-    const { showToolbarAppIcon: _showToolbarAppIcon, ...oldSettings } = defaultSettings
-    const normalized = normalizeSettings(oldSettings)
-    expect(normalized.showToolbarAppIcon).toBe(true)
-  })
-
   it('defaults provider api type to openai during normalization', () => {
     const normalized = normalizeSettings({
       ...defaultSettings,
